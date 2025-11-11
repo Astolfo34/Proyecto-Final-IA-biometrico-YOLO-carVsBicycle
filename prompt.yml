@@ -1,0 +1,197 @@
+Eres un asistente experto en visión por computador y generación automática de Jupyter Notebooks. Genera un Jupyter Notebook (.ipynb) listo para ejecutar en Google Colab que implemente un proyecto completo de detección y clasificación de objetos **SOLO EN IMÁGENES** para las clases **bicicleta** vs **auto** (bicycle vs car). El notebook debe usar los datasets YA PREPARADOS en formato YOLO v8 ubicados en la ruta relativa del proyecto: `Z_ProyectoYolo/datasets`. Las salidas del notebook serán únicamente imágenes (no texto extra), gráficos y archivos guardados en la estructura de carpetas pedida.
+
+**OBJETIVO PRINCIPAL (breve, 1–2 frases):**
+Desarrollar, entrenar y evaluar un modelo YOLOv8 que detecte y clasifique bicicletas vs autos en imágenes, demostrando precisión y capacidad de generalización — justificación: **usabilidad** (aplicaciones como conteo de tráfico, seguridad, estacionamientos inteligentes).
+
+---
+
+### REQUISITOS QUE DEBE CUMPLIR EL NOTEBOOK
+1. Lenguaje y ejecuciones aptas para Colab (celdas ejecutables sin interacción adicional salvo autorizar Drive).
+2. Instalar dependencias al inicio: por ejemplo `ultralytics`, `opencv-python-headless`, `matplotlib`, `pandas`, `tqdm`, `scikit-learn`.
+3. Usar una variable `DATASET_ROOT = "Z_ProyectoYolo/datasets"` y comprobar existencia/estructura al inicio.
+4. Fijar `RANDOM_SEED` reproducible.
+5. No usar rutas absolutas del sistema — todas relativas a `DATASET_ROOT` o variables.
+6. Documentar cada bloque (comentarios en español).
+
+---
+
+### ESTRUCTURA DE ARCHIVOS / ARQUITECTURA (creable por el notebook)
+
+Z_ProyectoYolo/
+├─ datasets/ # (ya existe, en formato YOLO v8)
+│ ├─ images/
+│ │ ├─ train/
+│ │ └─ val/
+│ └─ labels/
+│ ├─ train/
+│ └─ val/
+├─ notebook.ipynb # generado por el modelo
+├─ requirements.txt
+├─ runs/ # output de entrenamiento
+├─ evaluation/
+│ ├─ metrics/
+│ └─ figures/
+├─ inference/
+│ └─ results_images/
+├─ entrega_final/
+│ ├─ modelo/
+│ │ └─ best.pt
+│ ├─ informe.md
+│ └─ README.md
+└─ docs/
+├─ labeling_notes.md
+└─ reproducibility.md
+
+
+
+FASES---
+
+
+---
+
+### SECCIONES OBRIGATORIAS DEL NOTEBOOK (ordenadas)
+0. **Setup**
+   - Instalar dependencias.
+   - Definir variables principales: `DATASET_ROOT`, `PROJECT_ROOT`, `RANDOM_SEED`, `DEVICE` (auto), `OUTPUT_DIR`.
+   - Montar Google Drive opcionalmente (mostrar cómo hacerlo).
+   - Mostrar versión de `ultralytics` y `torch`.
+
+1. **Definición y justificación**
+   - Objetivo breve.
+   - Justificación por **usabilidad** (puntos claros).
+
+2. **Verificación de dataset**
+   - Comprobar que `DATASET_ROOT` contiene `images/train, images/val, labels/train, labels/val`.
+   - Contar imágenes por split y por clase (revisar archivos `.txt`).
+   - Avisos si faltan archivos o si hay desbalance fuerte.
+   - Recomendar mínimo por clase (mostrar un mensaje si <50 imágenes/clase).
+
+3. **Visualización de datos y comprobaciones**
+   - Mostrar 8–12 ejemplos aleatorios con bounding boxes (dibujar a partir de archivos `.txt` YOLO: class x_center y_center w h).
+   - Verificar que cada imagen tiene su `.txt` correspondiente.
+
+4. **Preparación de `data.yaml`**
+   - Crear/escribir `Z_ProyectoYolo/data.yaml` con rutas relativas:
+     ```yaml
+     train: Z_ProyectoYolo/datasets/images/train
+     val:   Z_ProyectoYolo/datasets/images/val
+     nc: 2
+     names: ['bicicleta','auto']
+     ```
+   - Mostrar su contenido y validarlo.
+
+5. **Selección del modelo y justificación**
+   - Sugerir `yolov8n` o `yolov8s` por compatibilidad con Colab gratuito; explicar trade-offs (velocidad vs precisión).
+   - Incluir variable `MODEL_BACKBONE = "yolov8n.pt"` a usar.
+
+6. **Entrenamiento**
+   - Mostrar comando reproducible con variables:
+     ```bash
+     !yolo detect train model={MODEL_BACKBONE} data=Z_ProyectoYolo/data.yaml imgsz=640 epochs=50 batch=16 project=runs name=exp_bici_auto
+     ```
+   - Sugerir hiperparámetros iniciales y explicar:
+     - `imgsz`: 640
+     - `epochs`: 50 (ajustable)
+     - `batch`: detectar según memoria GPU (sugerir `auto` fallback)
+     - Augmentaciones: mosaic, horizontal flip, hsv, scale (listar las usadas)
+   - Incluir celda para registrar observaciones: pérdidas (box/cls/obj), tiempo por época, uso GPU (si disponible).
+
+7. **Visualización de logs y métricas**
+   - Cargar `runs/exp_bici_auto/metrics.json` o usar API de `ultralytics` para extraer métricas.
+   - Graficar:
+     - Loss por epoch (box, cls, obj).
+     - Precision/Recall por epoch.
+     - mAP@0.5 (y si posible mAP@0.5:0.95).
+   - Guardar figuras en `evaluation/figures/`.
+
+8. **Evaluación cuantitativa**
+   - Calcular y mostrar: Precision, Recall, mAP@0.5, IoU promedio.
+   - Construir matriz de confusión por clase y guardarla.
+   - Comentar causas probables de errores (breve análisis automatizado + sugerencias).
+
+9. **Inferencia (solo imágenes)**
+   - Cargar `best.pt` y ejecutar inferencia en:
+     - `datasets/images/val` (guardar resultados).
+     - `inference/images_new/` (si el usuario agrega nuevas imágenes).
+   - Guardar imágenes con bounding boxes en `inference/results_images/`.
+   - Mostrar ejemplos de aciertos y fallos con breve anotación.
+
+10. **Empaquetado y entrega**
+    - Crear `entrega_final/` y copiar:
+      - `notebook.ipynb`
+      - `requirements.txt`
+      - `Z_ProyectoYolo/data.yaml`
+      - `runs/exp_bici_auto/weights/best.pt` → `entrega_final/modelo/best.pt`
+      - `evaluation/` y `inference/` contenidos relevantes
+      - `docs/` (labeling_notes.md, reproducibility.md)
+    - Crear un ZIP descargable (`entrega_final.zip`) y mostrar comando para descargar en Colab.
+
+11. **Informe final (3–5 páginas en `informe.md`)**
+    - Auto-generar un `informe.md` (formato markdown) con:
+      1. Descripción del problema y justificación (usabilidad).
+      2. Proceso de creación y estructura del dataset.
+      3. Configuración de entrenamiento (modelo, hiperparámetros).
+      4. Resultados: métricas, 3–6 capturas de inferencia.
+      5. Conclusiones y recomendaciones (mejoras concretas: más datos, mejor anotación, cambiar modelo, más epochs).
+    - Convertir a PDF opcional (si Colab lo permite).
+
+12. **Checklist final imprimible (checkbox list)**
+    - Mostrar en la última celda un checklist con rutas exactas y estado (✅/❌) para:
+      - `Z_ProyectoYolo/datasets/...` (existencia)
+      - `Z_ProyectoYolo/data.yaml`
+      - `runs/exp_bici_auto/weights/best.pt`
+      - `evaluation/metrics/*.png`
+      - `inference/results_images/*.png`
+      - `entrega_final/entrega_final.zip`
+      - `docs/labeling_notes.md`
+      - `informe.md`
+
+---
+
+### SALIDAS/ENTREGABLES OBLIGATORIOS (rutas dentro del proyecto)
+- `Z_ProyectoYolo/notebook.ipynb`
+- `Z_ProyectoYolo/requirements.txt`
+- `Z_ProyectoYolo/data.yaml`
+- `Z_ProyectoYolo/runs/exp_bici_auto/weights/best.pt`
+- `Z_ProyectoYolo/evaluation/metrics.json` (o equivalente) y `evaluation/figures/*.png`
+- `Z_ProyectoYolo/inference/results_images/*.png`
+- `Z_ProyectoYolo/docs/labeling_notes.md`
+- `Z_ProyectoYolo/docs/reproducibility.md`
+- `Z_ProyectoYolo/informe.md`
+- `Z_ProyectoYolo/entrega_final/entrega_final.zip`
+
+---
+
+### REQUISITOS ADICIONALES / BUENAS PRÁCTICAS
+- Validar que cada imagen en `images/*` tenga su label `.txt` correspondiente; si faltan, listarlas en `docs/labeling_notes.md`.
+- Incluir mensajes claros si dataset está desequilibrado.
+- Si número de imágenes por clase < 50: mostrar advertencia y sugerir aumento de datos.
+- Comentar posibles mejoras prácticas (p. ej. recopilación adicional, balanceo, anotaciones de mayor calidad, experimentar con `yolov8s`/`m`).
+
+---
+
+### INSTRUCCIONES DE FORMATO Y LENGUAJE
+- Todo el notebook debe estar en **español**.
+- Comentarios y celdas de texto deben ser claros y didácticos (útil para un repositorio académico o entrega).
+- Emplea títulos H1/H2/H3 en markdown para cada sección.
+
+---
+
+### COMPORTAMIENTO OBLIGATORIO DEL MODELO QUE GENERA EL NOTEBOOK
+- Genera celdas de código y markdown completas — **no** dejes partes “pendientes”.
+- Incluye un bloque inicial que detecte si el notebook está en Colab y ajuste rutas (ej.: opción para montar Drive).
+- No uses información sensible ni rutas absolutas fuera de `Z_ProyectoYolo`.
+- Al final imprime exactamente los comandos que el usuario debe ejecutar para descargar el ZIP en Colab (ej: `from google.colab import files; files.download('entrega_final.zip')`).
+
+---
+
+### CONSEJO DE HIPERPARÁMETROS POR DEFECTO (pueden modificarse)
+- `imgsz`: 640
+- `epochs`: 50
+- `batch`: 16 (si OOM -> reducir a 8 o 4)
+- `model`: `yolov8n.pt` (sugerido)
+- Augmentaciones: mosaic=True, flip=True, hsv=True
+
+---
+
+Genera ahora el notebook `.ipynb` con las instrucciones y estructura anteriores y asegura que al final el usuario tenga `Z_ProyectoYolo/entrega_final/entrega_final.zip` listo para descargar.  
