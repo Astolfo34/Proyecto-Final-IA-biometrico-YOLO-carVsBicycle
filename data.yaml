@@ -1,0 +1,4 @@
+train: Z_ProyectoYolo/datasets/images/train
+val: Z_ProyectoYolo/datasets/images/val
+nc: 2
+names: ['bicicleta','auto']
