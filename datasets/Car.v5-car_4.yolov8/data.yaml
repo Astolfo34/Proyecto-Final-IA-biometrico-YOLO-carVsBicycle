@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 9
+names: ['bike', 'bus', 'car', 'jeep', 'lorry', 'pickup', 'tiper', 'tuk', 'van']
+
+roboflow:
+  workspace: hng
+  project: car-uvjtt
+  version: 5
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/hng/car-uvjtt/dataset/5
