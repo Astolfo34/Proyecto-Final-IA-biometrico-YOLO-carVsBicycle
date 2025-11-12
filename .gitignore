@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Virtual envs
+.venv/
+venv/
+.env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Training and experiment outputs (heavy)
+Z_ProyectoYolo/runs/
+runs/
+
+# Inference and evaluation artifacts (can be regenerated)
+Z_ProyectoYolo/inference/
+inference/
+Z_ProyectoYolo/evaluation/figures/
+Z_ProyectoYolo/entrega_final/*.zip
+
+# Model weights and large binaries
+*.pt
+*.onnx
+*.engine
+*.trt
+*.npy
+*.npz
+
+# Logs
+*.log
+
+# Cache
+**/.cache/
+**/cache/
+
+# Misc datasets temp
+**/tmp/
+**/temp/
