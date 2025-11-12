@@ -1,0 +1,19 @@
+{
+  "images": {
+    "train": 0,
+    "val": 0
+  },
+  "instances": {
+    "train": 0,
+    "val": 0
+  },
+  "class_counts": {
+    "train": {},
+    "val": {}
+  },
+  "issues_counts": {
+    "missing_label_for_image": 0,
+    "empty_label_file": 0,
+    "malformed_lines": 0
+  }
+}
