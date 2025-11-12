@@ -1,0 +1,87 @@
+flowchart TD
+  %% Diagrama de flujo por capas: Proyecto YOLOv8 Autos vs Bicicletas
+  
+  subgraph Dependencias
+    U["Ultralytics YOLOv8"]
+    T["PyTorch"]
+    CV["OpenCV (headless)"]
+    M["Matplotlib"]
+    P["Pandas"]
+    Y["PyYAML"]
+  end
+
+  subgraph Datos
+    direction TB
+    D1["datasets/bicycle.v1i.yolov8"]
+    D2["datasets/Car.v5-car_4.yolov8"]
+    Merge{{"Fusión y remapeo<br/>(bici→0, auto→1)"}}
+    DS[("datasets/merged_bike_car")] 
+    Check["Verificación estructura YOLOv8<br/>(images/train, labels/train, val|valid)"]
+    YAML["Generar/usar data.yaml"]
+  end
+
+  subgraph Entrenamiento
+    direction TB
+    Model[("yolov8n.pt / yolov8s.pt")]
+    Train["yolo detect train\n(imgsz, epochs, batch, aug)"]
+    Runs[("runs/exp_bici_auto")] 
+    Best[["best.pt"]]
+  end
+
+  subgraph Evaluación
+    direction TB
+    CSV["results.csv"]
+    PR["Precision / Recall / mAP"]
+    Fig["evaluation/figures/*.png"]
+    Met["evaluation/metrics/metrics.json"]
+  end
+
+  subgraph Inferencia
+    direction TB
+    ValImgs[("images/{val|valid}")]
+    NewImgs[("inference/images_new")] 
+    Pred["YOLO.predict"]
+    OutImgs[("inference/tmp_pred/predict*")]
+    Copy["Copiar predicciones"]
+    Results[("inference/results_images")] 
+  end
+
+  subgraph Entrega
+    direction TB
+    CopyBest["Copiar best.pt → modelo/best.pt"]
+    Informe["informe.md"]
+  end
+
+  %% Flujos de datos
+  D1 --> Merge
+  D2 --> Merge
+  Merge --> DS
+  DS --> Check --> YAML
+
+  %% Entrenamiento
+  YAML --> Train
+  Model --> Train
+  Train --> Runs --> Best
+  U --> Train
+  T --> Train
+
+  %% Evaluación
+  Runs --> CSV --> PR --> Met
+  M --> Fig
+  P --> PR
+  CSV --> Fig
+
+  %% Inferencia
+  YAML --> ValImgs
+  Best --> Pred
+  ValImgs --> Pred
+  NewImgs --> Pred
+  Pred --> OutImgs --> Copy --> Results
+  CV --> Pred
+
+  %% Entrega
+  Best --> CopyBest
+  PR --> Informe
+  Fig --> Informe
+  Results --> Informe
+  Y --> YAML
